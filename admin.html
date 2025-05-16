@@ -20,11 +20,53 @@
       width: 100%;
     }
 
+    .login-container {
+      background: #15294c;
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .login-container h2 {
+      margin: 0 0 15px 0;
+      color: #2a7aff;
+    }
+
+    .login-container input {
+      background: #1c355e;
+      border: none;
+      border-radius: 8px;
+      color: #e1e8ff;
+      padding: 10px;
+      font-family: 'Poppins', sans-serif;
+      width: 200px;
+      margin-bottom: 10px;
+    }
+
+    .login-container button {
+      background: #2a7aff;
+      color: #e1e8ff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .login-container button:hover {
+      background: #1a5bff;
+    }
+
+    .login-container .error {
+      color: #f44336;
+      margin-top: 10px;
+    }
+
     .form-container {
       background: #15294c;
       border-radius: 16px;
       padding: 20px;
       margin-bottom: 20px;
+      display: none;
     }
 
     .form-container h2 {
@@ -56,6 +98,10 @@
 
     .form-container button:hover {
       background: #1a5bff;
+    }
+
+    .topic-list {
+      display: none;
     }
 
     .topic-list .card {
@@ -140,7 +186,13 @@
 </head>
 <body>
   <div class="container">
-    <div class="form-container">
+    <div class="login-container" id="loginContainer">
+      <h2>Digite o Código de Acesso</h2>
+      <input type="password" id="codigoAcesso" placeholder="Código" />
+      <button onclick="verificarCodigo()">Entrar</button>
+      <div class="error" id="erroLogin"></div>
+    </div>
+    <div class="form-container" id="formContainer">
       <h2>Adicionar Novo Tópico</h2>
       <textarea id="novoTopico" placeholder="Digite o texto do tópico aqui..."></textarea>
       <button onclick="adicionarTopico()">Adicionar Tópico</button>
@@ -162,12 +214,29 @@
       storageBucket: "webatr-4221b.firebasestorage.app",
       messagingSenderId: "285528231313",
       appId: "1:285528231313:web:d50fa5c929ebe6bfef5e30",
+      appId: "seu-app-id"
     };
 
     // Inicializa Firebase
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
     const topicList = document.getElementById('topicList');
+    const formContainer = document.getElementById('formContainer');
+    const loginContainer = document.getElementById('loginContainer');
+    const erroLogin = document.getElementById('erroLogin');
+
+    // Verifica o código de acesso
+    function verificarCodigo() {
+      const codigo = document.getElementById('codigoAcesso').value;
+      if (codigo === '1565') {
+        loginContainer.style.display = 'none';
+        formContainer.style.display = 'block';
+        topicList.style.display = 'block';
+        iniciarListener();
+      } else {
+        erroLogin.textContent = 'Código incorreto. Tente novamente.';
+      }
+    }
 
     // Função para adicionar um novo tópico
     function adicionarTopico() {
@@ -180,7 +249,7 @@
       const ref = database.ref('topicos').push();
       ref.set({ texto: texto, concluido: false })
         .then(() => {
-          document.getElementById('novoTopico').value = ''; // Limpa o textarea
+          document.getElementById('novoTopico').value = '';
         })
         .catch(error => {
           alert('Erro ao adicionar tópico: ' + error.message);
@@ -189,6 +258,7 @@
 
     // Função para remover um tópico
     function removerTopico(key) {
+      if (!confirm('Tem certeza que deseja remover este tópico?')) return;
       database.ref('topicos/' + key).remove()
         .catch(error => {
           alert('Erro ao remover tópico: ' + error.message);
@@ -196,10 +266,11 @@
     }
 
     // Função para marcar como concluído
-    function marcarConcluido(key) {
-      database.ref('topicos/' + key).update({ concluido: true })
+    function marcarConcluido(key, currentState) {
+      if (!confirm(currentState ? 'Deseja reabrir este tópico?' : 'Deseja marcar este tópico como concluído?')) return;
+      database.ref('topicos/' + key).update({ concluido: !currentState })
         .catch(error => {
-          alert('Erro ao marcar como concluído: ' + error.message);
+          alert('Erro ao atualizar o estado: ' + error.message);
         });
     }
 
@@ -270,7 +341,7 @@
         const botaoConcluido = document.createElement('button');
         botaoConcluido.textContent = value.concluido ? 'Reabrir' : 'Concluído';
         botaoConcluido.className = 'done-btn';
-        botaoConcluido.onclick = () => marcarConcluido(key);
+        botaoConcluido.onclick = () => marcarConcluido(key, value.concluido);
         card.appendChild(botaoConcluido);
 
         const editForm = document.createElement('div');
@@ -291,16 +362,17 @@
       });
     }
 
-    // Listener para atualizar a lista de tópicos em tempo real
-    database.ref('topicos').on('value', snapshot => {
-      if (snapshot.exists()) {
-        renderizarTopicos(snapshot.val());
-      } else {
-        topicList.innerHTML = '<p>Nenhum tópico disponível.</p>';
-      }
-    }, error => {
-      topicList.innerHTML = `<p style="color: #f44336;">Erro: ${error.message}</p>`;
-    });
+    function iniciarListener() {
+      database.ref('topicos').on('value', snapshot => {
+        if (snapshot.exists()) {
+          renderizarTopicos(snapshot.val());
+        } else {
+          topicList.innerHTML = '<p>Nenhum tópico disponível.</p>';
+        }
+      }, error => {
+        topicList.innerHTML = `<p style="color: #f44336;">Erro: ${error.message}</p>`;
+      });
+    }
   </script>
 </body>
 </html>

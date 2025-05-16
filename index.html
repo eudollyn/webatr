@@ -25,6 +25,43 @@
       gap: 20px;
     }
 
+    .filter-buttons {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .filter-buttons button {
+      background: #2a7aff;
+      color: #e1e8ff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 0 5px;
+    }
+
+    .filter-buttons button:hover {
+      background: #1a5bff;
+    }
+
+    .admin-button {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .admin-button button {
+      background: #ff9800;
+      color: #e1e8ff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .admin-button button:hover {
+      background: #f57c00;
+    }
+
     .card {
       background: #15294c;
       border-radius: 16px;
@@ -58,6 +95,11 @@
       white-space: pre-wrap;
     }
 
+    .card.completed h3::before {
+      content: '✔ ';
+      color: #4caf50;
+    }
+
     .card.completed p {
       text-decoration: line-through;
       color: #888;
@@ -73,8 +115,16 @@
   </style>
 </head>
 <body>
-  <div class="container" id="cardsContainer">
-    <div class="loading">Carregando tópicos...</div>
+  <div class="container">
+    <div class="admin-button">
+      <button onclick="window.location.href='admin.html'">Acessar Administração</button>
+    </div>
+    <div class="filter-buttons">
+      <button onclick="filtrarTopicos('todos')">Todos</button>
+      <button onclick="filtrarTopicos('pendentes')">Pendentes</button>
+      <button onclick="filtrarTopicos('concluidos')">Concluídos</button>
+    </div>
+    <div id="cardsContainer"></div>
   </div>
 
   <!-- Firebase -->
@@ -98,6 +148,7 @@
     const database = firebase.database();
 
     const container = document.getElementById('cardsContainer');
+    let dadosAtuais = {};
 
     function renderTópicos(dados) {
       container.innerHTML = '';
@@ -124,11 +175,46 @@
       });
     }
 
+    function filtrarTopicos(filtro) {
+      const filtrados = {};
+      if (filtro === 'todos') {
+        renderTópicos(dadosAtuais);
+      } else if (filtro === 'pendentes') {
+        Object.entries(dadosAtuais).forEach(([key, value]) => {
+          if (!value.concluido) filtrados[key] = value;
+        });
+        renderTópicos(filtrados);
+      } else if (filtro === 'concluidos') {
+        Object.entries(dadosAtuais).forEach(([key, value]) => {
+          if (value.concluido) filtrados[key] = value;
+        });
+        renderTópicos(filtrados);
+      }
+    }
+
+    function notificarNovoTopico() {
+      if (Notification.permission === 'granted') {
+        new Notification('Novo tópico adicionado!', { body: 'Um novo tópico foi adicionado à reunião.' });
+      } else if (Notification.permission !== 'denied') {
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            new Notification('Novo tópico adicionado!', { body: 'Um novo tópico foi adicionado à reunião.' });
+          }
+        });
+      }
+    }
+
+    let ultimoSnapshot = null;
     function iniciarListener() {
       const ref = database.ref('topicos');
       ref.on('value', (snapshot) => {
         if (snapshot.exists()) {
           const dados = snapshot.val();
+          if (ultimoSnapshot && Object.keys(dados).length > Object.keys(ultimoSnapshot).length) {
+            notificarNovoTopico();
+          }
+          ultimoSnapshot = dados;
+          dadosAtuais = dados;
           renderTópicos(dados);
         } else {
           container.innerHTML = '<div class="loading">Nenhum tópico disponível no momento.</div>';
