@@ -7,97 +7,141 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      background: #0c1b3a;
+      background: linear-gradient(135deg, #0c1b3a 0%, #1a2b5a 100%);
       color: #e1e8ff;
       font-family: 'Poppins', sans-serif;
       margin: 0;
-      padding: 30px 20px;
+      padding: 20px;
+      min-height: 100vh;
       display: flex;
       justify-content: center;
+      align-items: flex-start;
     }
 
     .container {
-      max-width: 800px;
+      max-width: 900px;
       width: 100%;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
     }
 
-    .filter-buttons {
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 20px;
-      text-align: center;
     }
 
-    .filter-buttons button {
-      background: #2a7aff;
-      color: #e1e8ff;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      margin: 0 5px;
-    }
-
-    .filter-buttons button:hover {
-      background: #1a5bff;
-    }
-
-    .admin-button {
-      text-align: center;
-      margin-bottom: 20px;
+    .header h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #2a7aff;
+      margin: 0;
     }
 
     .admin-button button {
       background: #ff9800;
       color: #e1e8ff;
       border: none;
-      padding: 10px 20px;
+      padding: 8px 16px;
       border-radius: 8px;
       cursor: pointer;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
     }
 
     .admin-button button:hover {
       background: #f57c00;
     }
 
+    .admin-button button::before {
+      content: '🔒';
+    }
+
+    .filter-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .filter-buttons button {
+      background: #1c355e;
+      color: #e1e8ff;
+      border: 2px solid #2a7aff;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.3s, transform 0.1s;
+    }
+
+    .filter-buttons button:hover {
+      background: #2a7aff;
+      transform: scale(1.05);
+    }
+
+    .filter-buttons button.active {
+      background: #2a7aff;
+      transform: scale(1.05);
+    }
+
+    .cards-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
     .card {
       background: #15294c;
-      border-radius: 16px;
-      padding: 20px 25px;
-      box-shadow: 0 4px 12px rgba(42, 122, 255, 0.25);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(42, 122, 255, 0.15);
       transition: transform 0.3s ease, box-shadow 0.3s ease;
       cursor: default;
       user-select: none;
+      border: 1px solid rgba(42, 122, 255, 0.3);
     }
 
     .card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 10px 25px rgba(42, 122, 255, 0.45);
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(42, 122, 255, 0.3);
     }
 
     .card h3 {
-      margin: 0 0 12px 0;
+      margin: 0 0 10px 0;
       font-weight: 600;
-      font-size: 1.25rem;
-      color: #2a7aff;
+      font-size: 1.2rem;
+      background: linear-gradient(90deg, #2a7aff, #5e92ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
       user-select: text;
+      display: flex;
+      align-items: center;
+      gap: 5px;
     }
 
     .card p {
       margin: 0;
       font-weight: 400;
-      font-size: 1rem;
+      font-size: 0.95rem;
       color: #e1e8ff;
       user-select: text;
-      line-height: 1.4;
+      line-height: 1.5;
       white-space: pre-wrap;
     }
 
     .card.completed h3::before {
-      content: '✔ ';
+      content: '✔';
       color: #4caf50;
+      font-size: 1rem;
+      animation: check 0.3s ease-in-out;
     }
 
     .card.completed p {
@@ -111,20 +155,106 @@
       text-align: center;
       width: 100%;
       grid-column: 1/-1;
+      font-size: 1rem;
+    }
+
+    @keyframes check {
+      0% { transform: scale(0); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    /* Responsividade para celular */
+    @media (max-width: 768px) {
+      body {
+        padding: 15px;
+      }
+
+      .header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+      }
+
+      .header h1 {
+        font-size: 1.3rem;
+      }
+
+      .admin-button button {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+      }
+
+      .filter-buttons {
+        flex-direction: row;
+        gap: 8px;
+      }
+
+      .filter-buttons button {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+      }
+
+      .cards-container {
+        grid-template-columns: 1fr;
+        gap: 15px;
+      }
+
+      .card {
+        padding: 15px;
+      }
+
+      .card h3 {
+        font-size: 1.1rem;
+      }
+
+      .card p {
+        font-size: 0.9rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .header h1 {
+        font-size: 1.2rem;
+      }
+
+      .filter-buttons {
+        gap: 5px;
+      }
+
+      .filter-buttons button {
+        padding: 5px 10px;
+        font-size: 0.8rem;
+      }
+
+      .card {
+        padding: 12px;
+      }
+
+      .card h3 {
+        font-size: 1rem;
+      }
+
+      .card p {
+        font-size: 0.85rem;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="admin-button">
-      <button onclick="window.location.href='admin.html'">Acessar Administração</button>
+    <div class="header">
+      <h1>ATR - Tópicos da Reunião em Tempo Real</h1>
+      <div class="admin-button">
+        <button onclick="window.location.href='admin.html'">Acessar Administração</button>
+      </div>
     </div>
     <div class="filter-buttons">
-      <button onclick="filtrarTopicos('todos')">Todos</button>
+      <button onclick="filtrarTopicos('todos')" class="active">Todos</button>
       <button onclick="filtrarTopicos('pendentes')">Pendentes</button>
       <button onclick="filtrarTopicos('concluidos')">Concluídos</button>
     </div>
-    <div id="cardsContainer"></div>
+    <div class="cards-container" id="cardsContainer"></div>
   </div>
 
   <!-- Firebase -->
@@ -141,6 +271,7 @@
       storageBucket: "webatr-4221b.firebasestorage.app",
       messagingSenderId: "285528231313",
       appId: "1:285528231313:web:d50fa5c929ebe6bfef5e30",
+      appId: "seu-app-id"
     };
 
     // Inicializa Firebase
@@ -176,6 +307,10 @@
     }
 
     function filtrarTopicos(filtro) {
+      const buttons = document.querySelectorAll('.filter-buttons button');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
       const filtrados = {};
       if (filtro === 'todos') {
         renderTópicos(dadosAtuais);
