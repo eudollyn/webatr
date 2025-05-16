@@ -63,6 +63,25 @@
       content: '🔒';
     }
 
+    .presentation-button {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .presentation-button button {
+      background: #4caf50;
+      color: #e1e8ff;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .presentation-button button:hover {
+      background: #388e3c;
+    }
+
     .filter-buttons {
       display: flex;
       justify-content: center;
@@ -107,6 +126,9 @@
       cursor: default;
       user-select: none;
       border: 1px solid rgba(42, 122, 255, 0.3);
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.5s ease forwards;
     }
 
     .card:hover {
@@ -158,10 +180,91 @@
       font-size: 1rem;
     }
 
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #2a7aff;
+      color: #e1e8ff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      display: none;
+      z-index: 1000;
+      animation: fadeInOut 3s ease-in-out;
+    }
+
+    .presentation-mode .cards-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .presentation-mode .card {
+      width: 80%;
+      max-width: 600px;
+      margin: 0;
+      padding: 30px;
+      font-size: 1.2rem;
+      transform: none !important;
+      box-shadow: none;
+      border: none;
+    }
+
+    .presentation-mode .card h3 {
+      font-size: 1.8rem;
+    }
+
+    .presentation-mode .card p {
+      font-size: 1.2rem;
+    }
+
+    .presentation-mode .header,
+    .presentation-mode .filter-buttons,
+    .presentation-mode .presentation-button {
+      display: none;
+    }
+
+    .presentation-nav {
+      position: fixed;
+      bottom: 20px;
+      display: flex;
+      gap: 20px;
+    }
+
+    .presentation-nav button {
+      background: #2a7aff;
+      color: #e1e8ff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .presentation-nav button:disabled {
+      background: #1c355e;
+      cursor: not-allowed;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
     @keyframes check {
       0% { transform: scale(0); }
       50% { transform: scale(1.2); }
       100% { transform: scale(1); }
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateY(-20px); }
+      10% { opacity: 1; transform: translateY(0); }
+      90% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-20px); }
     }
 
     /* Responsividade para celular */
@@ -180,7 +283,8 @@
         font-size: 1.3rem;
       }
 
-      .admin-button button {
+      .admin-button button,
+      .presentation-button button {
         padding: 6px 12px;
         font-size: 0.85rem;
       }
@@ -242,12 +346,16 @@
   </style>
 </head>
 <body>
+  <div class="notification" id="notification"></div>
   <div class="container">
     <div class="header">
       <h1>ATR - Tópicos da Reunião em Tempo Real</h1>
       <div class="admin-button">
         <button onclick="window.location.href='admin.html'">Acessar Administração</button>
       </div>
+    </div>
+    <div class="presentation-button">
+      <button onclick="togglePresentationMode()">Modo de Apresentação</button>
     </div>
     <div class="filter-buttons">
       <button onclick="filtrarTopicos('todos')" class="active">Todos</button>
@@ -280,6 +388,7 @@
 
     const container = document.getElementById('cardsContainer');
     let dadosAtuais = {};
+    let presentationIndex = 0;
 
     function renderTópicos(dados) {
       container.innerHTML = '';
@@ -293,6 +402,7 @@
         const card = document.createElement('div');
         card.className = 'card';
         if (value.concluido) card.className += ' completed';
+        card.style.animationDelay = `${i * 0.1}s`;
 
         const titulo = document.createElement('h3');
         titulo.textContent = `Tópico ${i + 1}`;
@@ -304,6 +414,63 @@
 
         container.appendChild(card);
       });
+    }
+
+    function togglePresentationMode() {
+      document.body.classList.toggle('presentation-mode');
+      if (document.body.classList.contains('presentation-mode')) {
+        renderPresentationMode();
+        document.querySelector('.presentation-button button').textContent = 'Sair do Modo de Apresentação';
+      } else {
+        document.querySelector('.presentation-button button').textContent = 'Modo de Apresentação';
+        renderTópicos(dadosAtuais);
+      }
+    }
+
+    function renderPresentationMode() {
+      const cards = Object.entries(dadosAtuais);
+      if (cards.length === 0) return;
+
+      container.innerHTML = '';
+      const card = document.createElement('div');
+      card.className = 'card';
+      if (cards[presentationIndex][1].concluido) card.className += ' completed';
+
+      const titulo = document.createElement('h3');
+      titulo.textContent = `Tópico ${presentationIndex + 1}`;
+      card.appendChild(titulo);
+
+      const corpo = document.createElement('p');
+      corpo.textContent = cards[presentationIndex][1].texto;
+      card.appendChild(corpo);
+
+      container.appendChild(card);
+
+      const nav = document.createElement('div');
+      nav.className = 'presentation-nav';
+      const prevBtn = document.createElement('button');
+      prevBtn.textContent = 'Anterior';
+      prevBtn.disabled = presentationIndex === 0;
+      prevBtn.onclick = () => {
+        if (presentationIndex > 0) {
+          presentationIndex--;
+          renderPresentationMode();
+        }
+      };
+      nav.appendChild(prevBtn);
+
+      const nextBtn = document.createElement('button');
+      nextBtn.textContent = 'Próximo';
+      nextBtn.disabled = presentationIndex === cards.length - 1;
+      nextBtn.onclick = () => {
+        if (presentationIndex < cards.length - 1) {
+          presentationIndex++;
+          renderPresentationMode();
+        }
+      };
+      nav.appendChild(nextBtn);
+
+      container.appendChild(nav);
     }
 
     function filtrarTopicos(filtro) {
@@ -328,6 +495,10 @@
     }
 
     function notificarNovoTopico() {
+      const notification = document.getElementById('notification');
+      notification.textContent = 'Novo tópico adicionado!';
+      notification.style.display = 'block';
+
       if (Notification.permission === 'granted') {
         new Notification('Novo tópico adicionado!', { body: 'Um novo tópico foi adicionado à reunião.' });
       } else if (Notification.permission !== 'denied') {
