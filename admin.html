@@ -5,51 +5,87 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Admin ATR - Gerenciar Tópicos da Reunião</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
-      background: #0c1b3a;
+      background: linear-gradient(135deg, #0c1b3a 0%, #1a2b5a 100%);
       color: #e1e8ff;
       font-family: 'Poppins', sans-serif;
-      margin: 0;
-      padding: 30px 20px;
+      padding: 20px;
+      min-height: 100vh;
       display: flex;
       justify-content: center;
     }
 
     .container {
-      max-width: 800px;
+      max-width: 900px;
       width: 100%;
     }
 
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #2a7aff;
+      margin: 0;
+    }
+
     .login-container {
-      background: #15294c;
+      background: linear-gradient(135deg, #15294c, #1c355e);
       border-radius: 16px;
-      padding: 20px;
+      padding: 30px;
       text-align: center;
+      box-shadow: 0 4px 15px rgba(42, 122, 255, 0.2);
+      max-width: 400px;
+      width: 100%;
+      margin: 0 auto;
     }
 
     .login-container h2 {
-      margin: 0 0 15px 0;
+      margin: 0 0 20px 0;
       color: #2a7aff;
+      font-size: 1.5rem;
     }
 
     .login-container input {
-      background: #1c355e;
-      border: none;
+      background: #0c1b3a;
+      border: 2px solid #2a7aff;
       border-radius: 8px;
       color: #e1e8ff;
-      padding: 10px;
+      padding: 12px;
       font-family: 'Poppins', sans-serif;
-      width: 200px;
-      margin-bottom: 10px;
+      width: 100%;
+      max-width: 200px;
+      margin-bottom: 15px;
+      transition: border-color 0.3s;
+    }
+
+    .login-container input:focus {
+      outline: none;
+      border-color: #5e92ff;
     }
 
     .login-container button {
       background: #2a7aff;
       color: #e1e8ff;
       border: none;
-      padding: 10px 20px;
+      padding: 12px 24px;
       border-radius: 8px;
       cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.3s;
     }
 
     .login-container button:hover {
@@ -59,6 +95,7 @@
     .login-container .error {
       color: #f44336;
       margin-top: 10px;
+      font-size: 0.9rem;
     }
 
     .form-container {
@@ -66,24 +103,40 @@
       border-radius: 16px;
       padding: 20px;
       margin-bottom: 20px;
+      box-shadow: 0 4px 15px rgba(42, 122, 255, 0.15);
       display: none;
     }
 
     .form-container h2 {
       margin: 0 0 15px 0;
       color: #2a7aff;
+      font-size: 1.3rem;
     }
 
-    .form-container textarea {
-      width: 100%;
-      height: 100px;
+    .form-container .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .form-container textarea,
+    .form-container select {
       background: #1c355e;
-      border: none;
+      border: 1px solid #2a7aff;
       border-radius: 8px;
       color: #e1e8ff;
-      padding: 10px;
+      padding: 12px;
       font-family: 'Poppins', sans-serif;
+      width: 100%;
       resize: vertical;
+      transition: border-color 0.3s;
+    }
+
+    .form-container textarea:focus,
+    .form-container select:focus {
+      outline: none;
+      border-color: #5e92ff;
     }
 
     .form-container button {
@@ -93,7 +146,8 @@
       padding: 10px 20px;
       border-radius: 8px;
       cursor: pointer;
-      margin-top: 10px;
+      font-size: 1rem;
+      transition: background 0.3s;
     }
 
     .form-container button:hover {
@@ -105,51 +159,62 @@
     }
 
     .topic-list .card {
-      background: #15294c;
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 10px;
+      background: #1c355e;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 10px rgba(42, 122, 255, 0.1);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.5s ease forwards;
     }
 
     .topic-list .card p {
       margin: 0;
+      font-size: 0.95rem;
       color: #e1e8ff;
       flex: 1;
+      word-wrap: break-word;
+    }
+
+    .topic-list .card.completed p {
+      text-decoration: line-through;
+      color: #888;
+    }
+
+    .topic-list .card .actions {
+      display: flex;
+      gap: 8px;
     }
 
     .topic-list .card button {
-      background: #f44336;
-      color: #e1e8ff;
+      background: none;
       border: none;
-      padding: 5px 10px;
+      color: #e1e8ff;
+      padding: 6px 12px;
       border-radius: 5px;
       cursor: pointer;
-      margin-left: 10px;
+      font-size: 0.9rem;
+      transition: transform 0.2s;
     }
 
     .topic-list .card button:hover {
-      background: #d32f2f;
+      transform: scale(1.1);
     }
 
-    .topic-list .card .edit-btn {
-      background: #ff9800;
-      margin-left: 10px;
+    .topic-list .card .remove-btn::before {
+      content: '🗑️';
     }
 
-    .topic-list .card .edit-btn:hover {
-      background: #f57c00;
+    .topic-list .card .edit-btn::before {
+      content: '✏️';
     }
 
-    .topic-list .card .done-btn {
-      background: #4caf50;
-      margin-left: 10px;
-    }
-
-    .topic-list .card .done-btn:hover {
-      background: #388e3c;
+    .topic-list .card .done-btn::before {
+      content: '✅';
     }
 
     .edit-form {
@@ -160,32 +225,198 @@
     .edit-form textarea {
       width: 100%;
       height: 80px;
-      background: #1c355e;
-      border: none;
+      background: #0c1b3a;
+      border: 1px solid #2a7aff;
       border-radius: 8px;
       color: #e1e8ff;
       padding: 10px;
       font-family: 'Poppins', sans-serif;
       resize: vertical;
+      transition: border-color 0.3s;
+    }
+
+    .edit-form textarea:focus {
+      outline: none;
+      border-color: #5e92ff;
+    }
+
+    .edit-form .buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
     }
 
     .edit-form button {
       background: #2a7aff;
       color: #e1e8ff;
       border: none;
-      padding: 5px 10px;
+      padding: 8px 16px;
       border-radius: 5px;
       cursor: pointer;
-      margin-top: 5px;
+      font-size: 0.9rem;
+      transition: background 0.3s;
     }
 
     .edit-form button:hover {
       background: #1a5bff;
     }
+
+    .edit-form .cancel-btn {
+      background: #f44336;
+    }
+
+    .edit-form .cancel-btn:hover {
+      background: #d32f2f;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Responsividade para celular */
+    @media (max-width: 768px) {
+      body {
+        padding: 15px;
+      }
+
+      .header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+      }
+
+      .header h1 {
+        font-size: 1.3rem;
+      }
+
+      .login-container {
+        padding: 20px;
+      }
+
+      .login-container input {
+        padding: 10px;
+        font-size: 0.9rem;
+      }
+
+      .login-container button {
+        padding: 10px 18px;
+        font-size: 0.9rem;
+      }
+
+      .form-container {
+        padding: 15px;
+      }
+
+      .form-container h2 {
+        font-size: 1.2rem;
+      }
+
+      .form-container textarea,
+      .form-container select {
+        padding: 10px;
+        font-size: 0.9rem;
+      }
+
+      .form-container button {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+      }
+
+      .topic-list .card {
+        padding: 12px;
+      }
+
+      .topic-list .card p {
+        font-size: 0.9rem;
+      }
+
+      .topic-list .card button {
+        padding: 4px 10px;
+        font-size: 0.85rem;
+      }
+
+      .edit-form textarea {
+        padding: 8px;
+        font-size: 0.9rem;
+      }
+
+      .edit-form button {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .header h1 {
+        font-size: 1.2rem;
+      }
+
+      .login-container {
+        padding: 15px;
+      }
+
+      .login-container input {
+        padding: 8px;
+        font-size: 0.85rem;
+      }
+
+      .login-container button {
+        padding: 8px 14px;
+        font-size: 0.85rem;
+      }
+
+      .form-container {
+        padding: 12px;
+      }
+
+      .form-container h2 {
+        font-size: 1.1rem;
+      }
+
+      .form-container textarea,
+      .form-container select {
+        padding: 8px;
+        font-size: 0.85rem;
+      }
+
+      .form-container button {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+      }
+
+      .topic-list .card {
+        padding: 10px;
+      }
+
+      .topic-list .card p {
+        font-size: 0.85rem;
+      }
+
+      .topic-list .card button {
+        padding: 3px 8px;
+        font-size: 0.8rem;
+      }
+
+      .edit-form textarea {
+        padding: 6px;
+        font-size: 0.85rem;
+      }
+
+      .edit-form button {
+        padding: 5px 10px;
+        font-size: 0.8rem;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
+    <div class="header">
+      <h1>Admin ATR - Gerenciar Tópicos</h1>
+    </div>
     <div class="login-container" id="loginContainer">
       <h2>Digite o Código de Acesso</h2>
       <input type="password" id="codigoAcesso" placeholder="Código" />
@@ -194,8 +425,20 @@
     </div>
     <div class="form-container" id="formContainer">
       <h2>Adicionar Novo Tópico</h2>
-      <textarea id="novoTopico" placeholder="Digite o texto do tópico aqui..."></textarea>
-      <button onclick="adicionarTopico()">Adicionar Tópico</button>
+      <div class="input-group">
+        <textarea id="novoTopico" placeholder="Digite o texto do tópico aqui..."></textarea>
+        <select id="categoriaTopico">
+          <option value="geral">Geral</option>
+          <option value="urgente">Urgente</option>
+          <option value="espiritual">Espiritual</option>
+        </select>
+        <select id="prioridadeTopico">
+          <option value="baixa">Baixa</option>
+          <option value="media">Média</option>
+          <option value="alta">Alta</option>
+        </select>
+        <button onclick="adicionarTopico()">Adicionar Tópico</button>
+      </div>
     </div>
     <div class="topic-list" id="topicList"></div>
   </div>
@@ -214,7 +457,6 @@
       storageBucket: "webatr-4221b.firebasestorage.app",
       messagingSenderId: "285528231313",
       appId: "1:285528231313:web:d50fa5c929ebe6bfef5e30",
-      appId: "seu-app-id"
     };
 
     // Inicializa Firebase
@@ -241,13 +483,15 @@
     // Função para adicionar um novo tópico
     function adicionarTopico() {
       const texto = document.getElementById('novoTopico').value.trim();
+      const categoria = document.getElementById('categoriaTopico').value;
+      const prioridade = document.getElementById('prioridadeTopico').value;
       if (!texto) {
         alert('Por favor, insira um texto para o tópico.');
         return;
       }
 
       const ref = database.ref('topicos').push();
-      ref.set({ texto: texto, concluido: false })
+      ref.set({ texto: texto, concluido: false, categoria: categoria, prioridade: prioridade })
         .then(() => {
           document.getElementById('novoTopico').value = '';
         })
@@ -275,23 +519,27 @@
     }
 
     // Função para iniciar edição
-    function iniciarEdicao(key, texto) {
+    function iniciarEdicao(key, texto, categoria, prioridade) {
       const card = document.querySelector(`[data-key="${key}"]`);
       const editForm = card.querySelector('.edit-form');
       editForm.style.display = 'block';
       editForm.querySelector('textarea').value = texto;
+      editForm.querySelector('select[name="categoria"]').value = categoria;
+      editForm.querySelector('select[name="prioridade"]').value = prioridade;
     }
 
     // Função para salvar edição
     function salvarEdicao(key) {
       const card = document.querySelector(`[data-key="${key}"]`);
       const novoTexto = card.querySelector('.edit-form textarea').value.trim();
+      const novaCategoria = card.querySelector('.edit-form select[name="categoria"]').value;
+      const novaPrioridade = card.querySelector('.edit-form select[name="prioridade"]').value;
       if (!novoTexto) {
         alert('Por favor, insira um texto para o tópico.');
         return;
       }
 
-      database.ref('topicos/' + key).update({ texto: novoTexto })
+      database.ref('topicos/' + key).update({ texto: novoTexto, categoria: novaCategoria, prioridade: novaPrioridade })
         .then(() => {
           card.querySelector('.edit-form').style.display = 'none';
         })
@@ -314,48 +562,73 @@
         return;
       }
 
-      Object.entries(dados).forEach(([key, value]) => {
+      Object.entries(dados).forEach(([key, value], i) => {
         const card = document.createElement('div');
         card.className = 'card';
         card.setAttribute('data-key', key);
+        if (value.concluido) card.className += ' completed';
+        if (value.categoria) card.className += ` categoria-${value.categoria}`;
+        if (value.prioridade) card.className += ` prioridade-${value.prioridade}`;
+        card.style.animationDelay = `${i * 0.1}s`;
 
         const corpo = document.createElement('p');
         corpo.textContent = value.texto;
-        if (value.concluido) {
-          corpo.style.textDecoration = 'line-through';
-          corpo.style.color = '#888';
-        }
         card.appendChild(corpo);
 
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+
         const botaoRemover = document.createElement('button');
-        botaoRemover.textContent = 'Remover';
+        botaoRemover.className = 'remove-btn';
         botaoRemover.onclick = () => removerTopico(key);
-        card.appendChild(botaoRemover);
+        actions.appendChild(botaoRemover);
 
         const botaoEditar = document.createElement('button');
-        botaoEditar.textContent = 'Editar';
         botaoEditar.className = 'edit-btn';
-        botaoEditar.onclick = () => iniciarEdicao(key, value.texto);
-        card.appendChild(botaoEditar);
+        botaoEditar.onclick = () => iniciarEdicao(key, value.texto, value.categoria, value.prioridade);
+        actions.appendChild(botaoEditar);
 
         const botaoConcluido = document.createElement('button');
-        botaoConcluido.textContent = value.concluido ? 'Reabrir' : 'Concluído';
         botaoConcluido.className = 'done-btn';
         botaoConcluido.onclick = () => marcarConcluido(key, value.concluido);
-        card.appendChild(botaoConcluido);
+        actions.appendChild(botaoConcluido);
+
+        card.appendChild(actions);
 
         const editForm = document.createElement('div');
         editForm.className = 'edit-form';
         const editTextarea = document.createElement('textarea');
         editForm.appendChild(editTextarea);
+        const categoriaSelect = document.createElement('select');
+        categoriaSelect.name = 'categoria';
+        ['geral', 'urgente', 'espiritual'].forEach(cat => {
+          const option = document.createElement('option');
+          option.value = cat;
+          option.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+          categoriaSelect.appendChild(option);
+        });
+        editForm.appendChild(categoriaSelect);
+        const prioridadeSelect = document.createElement('select');
+        prioridadeSelect.name = 'prioridade';
+        ['baixa', 'media', 'alta'].forEach(pri => {
+          const option = document.createElement('option');
+          option.value = pri;
+          option.textContent = pri.charAt(0).toUpperCase() + pri.slice(1);
+          prioridadeSelect.appendChild(option);
+        });
+        editForm.appendChild(prioridadeSelect);
+        const buttons = document.createElement('div');
+        buttons.className = 'buttons';
         const saveBtn = document.createElement('button');
         saveBtn.textContent = 'Salvar';
         saveBtn.onclick = () => salvarEdicao(key);
-        editForm.appendChild(saveBtn);
+        buttons.appendChild(saveBtn);
         const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'cancel-btn';
         cancelBtn.textContent = 'Cancelar';
         cancelBtn.onclick = () => cancelarEdicao(key);
-        editForm.appendChild(cancelBtn);
+        buttons.appendChild(cancelBtn);
+        editForm.appendChild(buttons);
         card.appendChild(editForm);
 
         topicList.appendChild(card);
