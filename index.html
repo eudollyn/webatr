@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ATR - Tópicos da Reunião em Tempo Real</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    body {
+      background: #0c1b3a;
+      color: #e1e8ff;
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 30px 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 800px;
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: #15294c;
+      border-radius: 16px;
+      padding: 20px 25px;
+      box-shadow: 0 4px 12px rgba(42, 122, 255, 0.25);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: default;
+      user-select: none;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 10px 25px rgba(42, 122, 255, 0.45);
+    }
+
+    .card h3 {
+      margin: 0 0 12px 0;
+      font-weight: 600;
+      font-size: 1.25rem;
+      color: #2a7aff;
+      user-select: text;
+    }
+
+    .card p {
+      margin: 0;
+      font-weight: 400;
+      font-size: 1rem;
+      color: #e1e8ff;
+      user-select: text;
+      line-height: 1.4;
+      white-space: pre-wrap;
+    }
+
+    .card.completed p {
+      text-decoration: line-through;
+      color: #888;
+    }
+
+    .loading {
+      font-weight: 600;
+      color: #2a7aff;
+      text-align: center;
+      width: 100%;
+      grid-column: 1/-1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="cardsContainer">
+    <div class="loading">Carregando tópicos...</div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <script>
+    // Substitua pelos seus dados reais do Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDmfFqUxUNFRYTdkhY7DlKdrFBjOMLFdKg",
+      authDomain: "webatr-4221b.firebaseapp.com",
+      databaseURL: "https://webatr-4221b-default-rtdb.firebaseio.com",
+      projectId: "webatr-4221b",
+      storageBucket: "webatr-4221b.firebasestorage.app",
+      messagingSenderId: "285528231313",
+      appId: "1:285528231313:web:d50fa5c929ebe6bfef5e30",
+    };
+
+    // Inicializa Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+
+    const container = document.getElementById('cardsContainer');
+
+    function renderTópicos(dados) {
+      container.innerHTML = '';
+
+      if (!dados || Object.keys(dados).length === 0) {
+        container.innerHTML = '<div class="loading">Nenhum tópico disponível no momento.</div>';
+        return;
+      }
+
+      Object.entries(dados).forEach(([key, value], i) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        if (value.concluido) card.className += ' completed';
+
+        const titulo = document.createElement('h3');
+        titulo.textContent = `Tópico ${i + 1}`;
+        card.appendChild(titulo);
+
+        const corpo = document.createElement('p');
+        corpo.textContent = value.texto;
+        card.appendChild(corpo);
+
+        container.appendChild(card);
+      });
+    }
+
+    function iniciarListener() {
+      const ref = database.ref('topicos');
+      ref.on('value', (snapshot) => {
+        if (snapshot.exists()) {
+          const dados = snapshot.val();
+          renderTópicos(dados);
+        } else {
+          container.innerHTML = '<div class="loading">Nenhum tópico disponível no momento.</div>';
+        }
+      }, (error) => {
+        container.innerHTML = `<div class="loading" style="color: #f44336;">Erro: ${error.message}</div>`;
+      });
+    }
+
+    iniciarListener();
+  </script>
+</body>
+</html>

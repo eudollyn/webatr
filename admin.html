@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin ATR - Gerenciar Tópicos da Reunião</title>
+  <style>
+    body {
+      background: #0c1b3a;
+      color: #e1e8ff;
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 30px 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 800px;
+      width: 100%;
+    }
+
+    .form-container {
+      background: #15294c;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .form-container h2 {
+      margin: 0 0 15px 0;
+      color: #2a7aff;
+    }
+
+    .form-container textarea {
+      width: 100%;
+      height: 100px;
+      background: #1c355e;
+      border: none;
+      border-radius: 8px;
+      color: #e1e8ff;
+      padding: 10px;
+      font-family: 'Poppins', sans-serif;
+      resize: vertical;
+    }
+
+    .form-container button {
+      background: #2a7aff;
+      color: #e1e8ff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .form-container button:hover {
+      background: #1a5bff;
+    }
+
+    .topic-list .card {
+      background: #15294c;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .topic-list .card p {
+      margin: 0;
+      color: #e1e8ff;
+      flex: 1;
+    }
+
+    .topic-list .card button {
+      background: #f44336;
+      color: #e1e8ff;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+
+    .topic-list .card button:hover {
+      background: #d32f2f;
+    }
+
+    .topic-list .card .edit-btn {
+      background: #ff9800;
+      margin-left: 10px;
+    }
+
+    .topic-list .card .edit-btn:hover {
+      background: #f57c00;
+    }
+
+    .topic-list .card .done-btn {
+      background: #4caf50;
+      margin-left: 10px;
+    }
+
+    .topic-list .card .done-btn:hover {
+      background: #388e3c;
+    }
+
+    .edit-form {
+      display: none;
+      margin-top: 10px;
+    }
+
+    .edit-form textarea {
+      width: 100%;
+      height: 80px;
+      background: #1c355e;
+      border: none;
+      border-radius: 8px;
+      color: #e1e8ff;
+      padding: 10px;
+      font-family: 'Poppins', sans-serif;
+      resize: vertical;
+    }
+
+    .edit-form button {
+      background: #2a7aff;
+      color: #e1e8ff;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+
+    .edit-form button:hover {
+      background: #1a5bff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="form-container">
+      <h2>Adicionar Novo Tópico</h2>
+      <textarea id="novoTopico" placeholder="Digite o texto do tópico aqui..."></textarea>
+      <button onclick="adicionarTopico()">Adicionar Tópico</button>
+    </div>
+    <div class="topic-list" id="topicList"></div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <script>
+    // Substitua pelos seus dados reais do Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDmfFqUxUNFRYTdkhY7DlKdrFBjOMLFdKg",
+      authDomain: "webatr-4221b.firebaseapp.com",
+      databaseURL: "https://webatr-4221b-default-rtdb.firebaseio.com",
+      projectId: "webatr-4221b",
+      storageBucket: "webatr-4221b.firebasestorage.app",
+      messagingSenderId: "285528231313",
+      appId: "1:285528231313:web:d50fa5c929ebe6bfef5e30",
+    };
+
+    // Inicializa Firebase
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const topicList = document.getElementById('topicList');
+
+    // Função para adicionar um novo tópico
+    function adicionarTopico() {
+      const texto = document.getElementById('novoTopico').value.trim();
+      if (!texto) {
+        alert('Por favor, insira um texto para o tópico.');
+        return;
+      }
+
+      const ref = database.ref('topicos').push();
+      ref.set({ texto: texto, concluido: false })
+        .then(() => {
+          document.getElementById('novoTopico').value = ''; // Limpa o textarea
+        })
+        .catch(error => {
+          alert('Erro ao adicionar tópico: ' + error.message);
+        });
+    }
+
+    // Função para remover um tópico
+    function removerTopico(key) {
+      database.ref('topicos/' + key).remove()
+        .catch(error => {
+          alert('Erro ao remover tópico: ' + error.message);
+        });
+    }
+
+    // Função para marcar como concluído
+    function marcarConcluido(key) {
+      database.ref('topicos/' + key).update({ concluido: true })
+        .catch(error => {
+          alert('Erro ao marcar como concluído: ' + error.message);
+        });
+    }
+
+    // Função para iniciar edição
+    function iniciarEdicao(key, texto) {
+      const card = document.querySelector(`[data-key="${key}"]`);
+      const editForm = card.querySelector('.edit-form');
+      editForm.style.display = 'block';
+      editForm.querySelector('textarea').value = texto;
+    }
+
+    // Função para salvar edição
+    function salvarEdicao(key) {
+      const card = document.querySelector(`[data-key="${key}"]`);
+      const novoTexto = card.querySelector('.edit-form textarea').value.trim();
+      if (!novoTexto) {
+        alert('Por favor, insira um texto para o tópico.');
+        return;
+      }
+
+      database.ref('topicos/' + key).update({ texto: novoTexto })
+        .then(() => {
+          card.querySelector('.edit-form').style.display = 'none';
+        })
+        .catch(error => {
+          alert('Erro ao salvar edição: ' + error.message);
+        });
+    }
+
+    // Função para cancelar edição
+    function cancelarEdicao(key) {
+      const card = document.querySelector(`[data-key="${key}"]`);
+      card.querySelector('.edit-form').style.display = 'none';
+    }
+
+    // Função para renderizar a lista de tópicos
+    function renderizarTopicos(dados) {
+      topicList.innerHTML = '';
+      if (!dados || Object.keys(dados).length === 0) {
+        topicList.innerHTML = '<p>Nenhum tópico disponível.</p>';
+        return;
+      }
+
+      Object.entries(dados).forEach(([key, value]) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.setAttribute('data-key', key);
+
+        const corpo = document.createElement('p');
+        corpo.textContent = value.texto;
+        if (value.concluido) {
+          corpo.style.textDecoration = 'line-through';
+          corpo.style.color = '#888';
+        }
+        card.appendChild(corpo);
+
+        const botaoRemover = document.createElement('button');
+        botaoRemover.textContent = 'Remover';
+        botaoRemover.onclick = () => removerTopico(key);
+        card.appendChild(botaoRemover);
+
+        const botaoEditar = document.createElement('button');
+        botaoEditar.textContent = 'Editar';
+        botaoEditar.className = 'edit-btn';
+        botaoEditar.onclick = () => iniciarEdicao(key, value.texto);
+        card.appendChild(botaoEditar);
+
+        const botaoConcluido = document.createElement('button');
+        botaoConcluido.textContent = value.concluido ? 'Reabrir' : 'Concluído';
+        botaoConcluido.className = 'done-btn';
+        botaoConcluido.onclick = () => marcarConcluido(key);
+        card.appendChild(botaoConcluido);
+
+        const editForm = document.createElement('div');
+        editForm.className = 'edit-form';
+        const editTextarea = document.createElement('textarea');
+        editForm.appendChild(editTextarea);
+        const saveBtn = document.createElement('button');
+        saveBtn.textContent = 'Salvar';
+        saveBtn.onclick = () => salvarEdicao(key);
+        editForm.appendChild(saveBtn);
+        const cancelBtn = document.createElement('button');
+        cancelBtn.textContent = 'Cancelar';
+        cancelBtn.onclick = () => cancelarEdicao(key);
+        editForm.appendChild(cancelBtn);
+        card.appendChild(editForm);
+
+        topicList.appendChild(card);
+      });
+    }
+
+    // Listener para atualizar a lista de tópicos em tempo real
+    database.ref('topicos').on('value', snapshot => {
+      if (snapshot.exists()) {
+        renderizarTopicos(snapshot.val());
+      } else {
+        topicList.innerHTML = '<p>Nenhum tópico disponível.</p>';
+      }
+    }, error => {
+      topicList.innerHTML = `<p style="color: #f44336;">Erro: ${error.message}</p>`;
+    });
+  </script>
+</body>
+</html>
